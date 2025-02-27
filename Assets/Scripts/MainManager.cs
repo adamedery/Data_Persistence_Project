@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,17 +12,23 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
     private int m_Points;
     
     private bool m_GameOver = false;
-
-    
+    private string playerName;
     // Start is called before the first frame update
     void Start()
     {
+        playerName = MenuManager.LoadName();
+        ScoreText.text = $"Score : {m_Points} Name : {playerName}";
+
+        MenuManager.LoadHighScore();
+        BestScoreText.text = $"Best Score : {MenuManager.GetHighScore()} Name : {MenuManager.GetHighScoreName()}";
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -65,12 +72,24 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        ScoreText.text = $"Score : {m_Points} Name : {playerName}";
     }
-
+    private void UpdateBestScore()
+    {
+        MenuManager.SetHighScore(m_Points);
+        MenuManager.SetHighScoreName(playerName);
+        MenuManager.SaveHighScore();
+        BestScoreText.text = $"Best Score : {MenuManager.GetHighScore()} Name : {MenuManager.GetHighScoreName()}";
+        MenuManager.SaveHighScore();
+    }
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        //update best score if better than current best score
+        if(m_Points > MenuManager.GetHighScore())
+        {
+            UpdateBestScore();
+        }
     }
 }
